@@ -1,0 +1,13 @@
+{
+  "name": "dexter-guess-who",
+  "version": "1.0.0",
+  "description": "Онлайн-игра Угадай кто по сериалу Декстер",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}

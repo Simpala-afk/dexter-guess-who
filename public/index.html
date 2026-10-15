@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Угадай кто? — Декстер</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app-container">
+    <header class="app-header">
+      <h1>УГАДАЙ КТО? <span>DEXTER EDITION</span></h1>
+    </header>
+
+    <!-- 1. ЭКРАН ВХОДА / СОЗДАНИЯ КОМНАТЫ -->
+    <section id="screen-home" class="screen active">
+      <div class="card-box">
+        <h2>Вход в игру</h2>
+        <div class="form-group">
+          <label for="player-name">Ваше имя:</label>
+          <input type="text" id="player-name" placeholder="Например, Декстер" maxlength="20" />
+        </div>
+
+        <button id="btn-create-room" class="btn btn-primary">Создать комнату</button>
+
+        <div class="divider"><span>ИЛИ</span></div>
+
+        <div class="form-group">
+          <label for="room-code-input">Код комнаты друга:</label>
+          <input type="text" id="room-code-input" placeholder="Например, X7K9P" maxlength="5" style="text-transform: uppercase;" />
+        </div>
+        <button id="btn-join-room" class="btn btn-secondary">Присоединиться</button>
+      </div>
+    </section>
+
+    <!-- 2. ЭКРАН КОМНАТЫ (ЛОББИ) -->
+    <section id="screen-lobby" class="screen">
+      <div class="card-box">
+        <h2>Комната ожидания</h2>
+        <p class="room-code-label">Код вашей комнаты:</p>
+        <div class="room-code-box" id="lobby-room-code">-----</div>
+        <p class="hint-text">Отправьте этот код другу, чтобы он зашёл в комнату</p>
+
+        <div id="winner-banner" class="winner-banner hidden"></div>
+
+        <div class="players-list-box">
+          <h3>Игроки в комнате (<span id="players-count">1</span>/2):</h3>
+          <ul id="lobby-players-list"></ul>
+        </div>
+
+        <p id="lobby-wait-msg" class="status-msg">Ожидаем подключения второго игрока...</p>
+        <button id="btn-start-game" class="btn btn-primary hidden">Начать игру</button>
+      </div>
+    </section>
+
+    <!-- 3. ЭКРАН ВЫБОРА СВОЕГО ПЕРСОНАЖА -->
+    <section id="screen-select" class="screen">
+      <div class="section-header">
+        <h2>Выберите своего персонажа</h2>
+        <p>Друг будет пытаться угадать, кого вы загадали</p>
+      </div>
+
+      <div id="selection-waiting-banner" class="waiting-overlay hidden">
+        <div class="spinner"></div>
+        <h3>Ожидайте, друг выбирает персонажа...</h3>
+        <p>Как только вы оба выберете, игра начнётся автоматически.</p>
+      </div>
+
+      <div id="selection-grid" class="cards-grid"></div>
+    </section>
+
+    <!-- 4. ИГРОВОЙ ЭКРАН -->
+    <section id="screen-game" class="screen">
+      <!-- Информационная панель сверху -->
+      <div class="game-top-bar">
+        <div class="my-secret-pill">
+          Ваш персонаж: <strong id="my-secret-name">---</strong>
+        </div>
+        <div id="turn-indicator" class="turn-banner">
+          Определение очереди...
+        </div>
+      </div>
+
+      <div class="game-layout">
+        <!-- Поле с 20 карточками персонажей -->
+        <div class="board-section">
+          <div class="board-header">
+            <h3>Персонажи «Декстера» (нажмите на карточку для действий)</h3>
+          </div>
+          <div id="game-board-grid" class="cards-grid"></div>
+        </div>
+
+        <!-- Чат вопросов и ответов -->
+        <div class="chat-section">
+          <div class="chat-header">Чат вопросов и ответов</div>
+          <div id="chat-messages" class="chat-messages"></div>
+
+          <!-- Панель быстрых ответов (появляется, когда друг задал вопрос) -->
+          <div id="answer-controls" class="answer-controls hidden">
+            <p class="answer-prompt">Ответьте на вопрос друга:</p>
+            <div class="answer-buttons">
+              <button class="btn btn-yes" data-answer="Да">Да</button>
+              <button class="btn btn-no" data-answer="Нет">Нет</button>
+            </div>
+            <div class="custom-answer-row">
+              <input type="text" id="custom-answer-input" placeholder="Или напишите уточнение..." />
+              <button id="btn-send-custom-answer" class="btn btn-secondary">Ответить</button>
+            </div>
+          </div>
+
+          <!-- Панель ввода вопроса (активна только в свою очередь) -->
+          <div id="question-controls" class="question-controls">
+            <input type="text" id="question-input" placeholder="Введите ваш вопрос..." />
+            <button id="btn-send-question" class="btn btn-primary">Спросить</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ ВЫБОРА ПЕРСОНАЖА -->
+  <div id="modal-confirm-select" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <h3>Подтверждение выбора</h3>
+      <p>Точно ли вы хотите выбрать этого персонажа?</p>
+      <div class="modal-char-preview" id="confirm-char-name">---</div>
+      <div class="modal-actions">
+        <button id="btn-confirm-char-yes" class="btn btn-primary">Да</button>
+        <button id="btn-confirm-char-no" class="btn btn-secondary">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- МЕНЮ КАРТОЧКИ ВО ВРЕМЯ ИГРЫ -->
+  <div id="modal-card-menu" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <h3 id="menu-char-title">Имя персонажа</h3>
+      <p class="modal-subtitle">Выберите действие с карточкой:</p>
+      <div class="modal-menu-buttons">
+        <button id="btn-card-guess" class="btn btn-primary">🎯 Выбрать им (Угадать персонажа друга)</button>
+        <button id="btn-card-question" class="btn btn-warning">❓ Оставить под вопросом / Снять вопрос</button>
+        <button id="btn-card-eliminate" class="btn btn-secondary">🔄 Убрать (Перевернуть) / Вернуть</button>
+        <button id="btn-card-cancel" class="btn btn-ghost">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
